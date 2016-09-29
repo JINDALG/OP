@@ -1,0 +1,7 @@
+Requirement already satisfied (use --upgrade to upgrade): sklearn in /usr/local/lib/python2.7/dist-packages
+Downloading/unpacking .17
+  Cannot fetch index base URL https://pypi.python.org/simple/
+  Could not find any downloads that satisfy the requirement .17
+Cleaning up...
+No distributions at all found for .17
+Storing debug log for failure in /home/shivji/.pip/pip.log

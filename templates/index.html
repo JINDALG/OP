@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Face</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  		<script type="text/javascript">
+      var obj = {}
+  			$(document).ready(function function_name() {
+  				if ($('.list-group').length > 0){
+  					intervalID = setInterval(function() {
+  						file = $('#file').val()
+              csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+  						$.ajax({
+  							url : '/status/',
+  							data : {file:file, csrfmiddlewaretoken : csrfmiddlewaretoken},
+  							type : "POST",
+  							success : function(response) {
+  								console.log(response)
+  								if (response.status != "0"){
+  									if (response.status == "2"){
+                      clearInterval(intervalID)
+  										alert("all Frame processed")
+  									}
+  									else if (response.status == "1") {
+                      if (response.person in obj){
+                        obj[response.person] += 1
+                      }
+                      else {
+                        obj[response.person] =1
+                      }
+                      $('.table').empty()
+                      $('.table').append('<thead><tr><th>Person name</th><th>count</th></tr></thead>')
+
+                      for (name in obj){
+                        $('.table').append('<thead><tr><td>'+name+'</td><td>'+obj[name]+'</td></tr></thead>')
+                      }
+                      }
+                    else {
+                        clearInterval(intervalID)
+                        alert(response.status)
+                      }
+  									}
+  								else {
+  									if ($('.list-group-item').length > 0){
+  										$('.badge').text(response.count);
+  									}
+  									else {
+  										$('.list-group').append('<li class="list-group-item">Processed frame count <span class="badge">'+ response.count +'</span></li>')
+  									}
+  								}
+  							},
+  							error : function (xhr, status, error) {
+  								console.log(xhr)
+  								console.log(status)
+  								console.log(error)
+  								clearInterval(intervalID)
+  							} 
+  						})
+  					},1500)
+  				}
+  			})
+  		</script>
+	</head>
+	<body>
+		<div class="container">
+			<h2> Upload video<h2>
+			<form method="POST"  id="upload" enctype="multipart/form-data" >
+				<div class="form-group">
+					{% csrf_token %}
+				{{ form.as_ul }}
+				<input type="submit" value="submit" id="submit">	
+				</div>
+			</form>
+
+			{% if file_name %}
+				<input type="hidden" name="file" id="file" value="{{file_name}}">
+				<ul class="list-group">
+					
+				</ul>
+        <table class="table">
+            
+        </table>
+			{% endif %}
+		</div>
+	</body>
+</html>

@@ -1,0 +1,3 @@
+Requirement already satisfied (use --upgrade to upgrade): sklearn in /usr/local/lib/python2.7/dist-packages
+Requirement already satisfied (use --upgrade to upgrade): scikit-learn in /usr/lib/python2.7/dist-packages (from sklearn)
+Cleaning up...

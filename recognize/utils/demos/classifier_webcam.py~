@@ -1,0 +1,221 @@
+#!/usr/bin/env python2
+import time
+import json
+start = time.time()
+import cv2
+import os
+import pickle
+import numpy as np
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+import copy
+np.set_printoptions(precision=2)
+from sklearn.mixture import GMM
+import openface
+fileDir = os.path.dirname(os.path.realpath(__file__))
+modelDir = os.path.join(fileDir, '..', 'models')
+dlibModelDir = os.path.join(modelDir, 'dlib')
+openfaceModelDir = os.path.join(modelDir, 'openface')
+
+networkModel = os.path.join(
+            openfaceModelDir,
+            'nn4.small2.v1.t7')
+
+net = openface.TorchNeuralNet(
+        networkModel,
+        imgDim=96, # 96 is kept as img Dimension
+        cuda=False)
+
+dlibFacePredictor = os.path.join(
+            dlibModelDir,
+            "shape_predictor_68_face_landmarks.dat")
+
+align = openface.AlignDlib(dlibFacePredictor)
+
+classifierModel =  fileDir+'/../generated-embeddings/classifier.pkl'
+
+def send_mail(receiver, img_data, person):
+    try :
+        msg = MIMEMultipart()
+        msg['Subject'] = 'Face Detection'
+        msg['From'] = 'mishra1995rashmi@gmail.com'
+        msg['To'] = 'jindalshivam65@gmail.com'
+
+        text = MIMEText(person)
+        msg.attach(text)
+        image = MIMEImage(img_data, name="blank")
+        msg.attach(image)
+
+        s = smtplib.SMTP('smtp.gmail.com',587) #port 465 or 587
+        s.ehlo()
+        s.starttls()
+        s.ehlo()
+        s.login('mishra1995rashmi@gmail.com','mishra1995')
+        s.sendmail('mishra1995rashmi@gmail.com',receiver, msg.as_string())
+        s.quit()
+        print "mail send for ", person
+    except Exception as e :
+        print e
+        send_mail(receiver, img_data, person)
+
+def getRep(bgrImg):
+    global net, align
+    start = time.time()
+    if bgrImg is None:
+        raise Exception("Unable to load image/frame")
+
+    rgbImg = cv2.cvtColor(bgrImg, cv2.COLOR_BGR2RGB)
+    start = time.time()
+
+    # Get the largest face bounding box
+    # bb = align.getLargestFaceBoundingBox(rgbImg) #Bounding box
+
+    # Get all bounding boxes
+    bb = align.getAllFaceBoundingBoxes(rgbImg)
+
+    if bb is None:
+        # raise Exception("Unable to find a face: {}".format(imgPath))
+        return None
+
+    start = time.time()
+
+    alignedFaces = []
+    for box in bb:
+        alignedFaces.append(
+            align.align(
+                96, # args.imgDim is taken as 96
+                rgbImg,
+                box,
+                landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE))
+
+    if alignedFaces is None:
+        raise Exception("Unable to align the frame")
+
+    start = time.time()
+
+    reps = []
+    for alignedFace in alignedFaces:
+        reps.append(net.forward(alignedFace))
+    return reps
+
+
+def infer(img):
+    global classifierModel
+    with open(classifierModel, 'r') as f:
+        (le, clf) = pickle.load(f)  # le - label and clf - classifer
+
+    reps = getRep(img)
+    persons = []
+    confidences = []
+    for rep in reps:
+        try:
+            rep = rep.reshape(1, -1)
+        except:
+            print "No Face detected"
+            return (None, None)
+        start = time.time()
+        predictions = clf.predict_proba(rep).ravel()
+        # print predictions
+        maxI = np.argmax(predictions)
+        # max2 = np.argsort(predictions)[-3:][::-1][1]
+        persons.append(le.inverse_transform(maxI))
+        # print str(le.inverse_transform(max2)) + ": "+str( predictions [max2])
+        # ^ prints the second prediction
+        confidences.append(predictions[maxI])
+
+        # print("Predict {} with {:.2f} confidence.".format(person, confidence))
+        if isinstance(clf, GMM):
+            dist = np.linalg.norm(rep - clf.means_[maxI])
+            print("  + Distance from the mean: {}".format(dist))
+            pass
+    return (persons, confidences)
+
+
+def findPersonInVideo(video_path, person):
+    global fileDir
+    video_path = fileDir + '/../../../' + video_path
+    print video_path
+    file_name = video_path.split('/')[-1].split('.')[0]
+    
+    # Capture device. Usually 0 will be webcam and 1 will be usb cam.
+    video_capture = cv2.VideoCapture(video_path)
+    confidenceList = []
+    frame_no = 1
+    ret, frame = video_capture.read()
+    while ret:
+        # cv2.putText(frame, "P: {} C: {}".format(persons, confidences),
+        #             (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0, 255), 1)
+        print frame_no
+        persons, confidences = infer(frame)
+
+        #priting the output and logging
+        # print "P: " + str(persons) + " C: " + str(confidences)
+        if person in persons:
+            index = persons.index(person)
+            if confidences[index] > .5:
+                #logging output
+
+                output = {
+                    'status' : 1,
+                    'count' : frame_no,
+                    'person' : person
+                }
+                with open(fileDir+'/../../'+file_name+'.json', 'w') as file:
+                    file.write(json.dumps(output))
+                cv2.imwrite('img.jpg', frame)
+                with open('img.jpg', 'rb') as file:
+                    img_data = file.read()
+                print person, confidences[index]
+                send_mail('jindalshivam65@gmail.com', copy.deepcopy(img_data), person)
+        else :
+            try:
+                # append with two floating point precision
+                confidenceList.append('%.2f' % confidences[0])
+            except:
+                # If there is no face detected, confidences matrix will be empty.
+                # We can simply ignore it.
+                pass
+
+            #         # Print the person name and conf value on the frame
+            # # quit the program on the press of key 'q'
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
+            #logging output
+            output = {
+                'status' : 0,
+                'count': frame_no
+            }
+            with open(fileDir+'/../../'+file_name+'.json', 'w') as file:
+                file.write(json.dumps(output))
+        frame_no +=5
+        video_capture.set(1,frame_no)
+        ret, frame = video_capture.read()
+
+    # When everything is done, release the capture
+    video_capture.release()
+    cv2.destroyAllWindows()
+
+def predictPerson(image_path):
+    global fileDir
+    image_path = fileDir + '/../../../' + image_path
+    images_name = image_path.split('/')[-1].split('.')[0]
+    frame = cv2.imread(image_path)
+    return infer(frame)
+
+
+def main(image_path, video_path):
+    persons, confidences = predictPerson(image_path)
+    file_name = video_path.split('/')[-1].split('.')[0]
+    print persons
+    print confidences
+    for person in persons :
+         findPersonInVideo(video_path, person)
+    output = {
+        'status' : 2
+    }
+    with open(fileDir+'/../../'+file_name+'.json', 'w') as file:
+        file.write(json.dumps(output))    
+
+# main('videos/download.jpg','videos/Srk aish.mp4')
