@@ -3,11 +3,11 @@ Install pip:
 	apt-get update
 	apt-get install python-pip
 
-Install virtualenv
+Install virtualenv:
 	pip install --upgrade virtualenv
 	mkdir ~/.virtualenvs
 
-Install virtualenvwrapper
+Install virtualenvwrapper:
 	pip install virtualenvwrapper
 
 Set WORKON_HOME to your virtualenv dir:
