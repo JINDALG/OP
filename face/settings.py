@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'djcelery',
     'recognize',
     'corsheaders',
     'django.contrib.admin',
@@ -128,6 +129,9 @@ STATICFILES_DIRS = (
 
 MEDIA_ROOT = os.path.join(BASE_DIR, '')
 MEDIA_URL = '/'
+
+import djcelery
+djcelery.setup_loader()
 
 # CELERY configuration
 BROKER_URL = 'redis://localhost:6379'

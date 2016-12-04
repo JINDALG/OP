@@ -1,0 +1,54 @@
+/root/.virtualenvs/facerec/local/lib/python2.7/site-packages/celery/platforms.py:812: RuntimeWarning: You are running the worker with superuser privileges, which is
+absolutely not recommended!
+
+Please specify a different user using the -u option.
+
+User information: uid=0 euid=0 gid=0 egid=0
+
+  uid=uid, euid=euid, gid=gid, egid=egid,
+[2016-11-03 11:55:12,452: INFO/MainProcess] Connected to redis://localhost:6379//
+[2016-11-03 11:55:12,460: INFO/MainProcess] mingle: searching for neighbors
+[2016-11-03 11:55:13,465: INFO/MainProcess] mingle: all alone
+[2016-11-03 11:55:13,474: WARNING/MainProcess] /root/.virtualenvs/facerec/local/lib/python2.7/site-packages/celery/fixups/django.py:265: UserWarning: Using settings.DEBUG leads to a memory leak, never use this setting in production environments!
+  warnings.warn('Using settings.DEBUG leads to a memory leak, never '
+[2016-11-03 11:55:13,474: WARNING/MainProcess] celery@dokku-2gb-blr1-01 ready.
+[2016-11-03 11:55:39,212: INFO/MainProcess] Received task: face_detection[1e5074ed-3c10-41bf-843a-f8cca9351476]
+[2016-11-03 11:55:39,420: WARNING/Worker-2] ['srk', 'aishwrya']
+[2016-11-03 11:55:39,420: WARNING/Worker-2] [0.69591225815997793, 0.62711358470162237]
+[2016-11-03 11:55:39,420: WARNING/Worker-2] /root/face/recognize/utils/demos/../../../videos/5DkO7ksXY8E.mp4
+[tls @ 0x26a08c0] A TLS packet with unexpected length was received.
+[2016-11-03 11:55:40,522: WARNING/Worker-2] /root/face/recognize/utils/demos/../../../videos/5DkO7ksXY8E.mp4
+[tls @ 0x70201c0] A TLS packet with unexpected length was received.
+[2016-11-03 11:55:41,532: INFO/Worker-2] face_detection[1e5074ed-3c10-41bf-843a-f8cca9351476]: process start
+[2016-11-03 11:55:41,533: INFO/MainProcess] Task face_detection[1e5074ed-3c10-41bf-843a-f8cca9351476] succeeded in 2.31893122394s: None
+[2016-11-03 11:55:53,749: INFO/MainProcess] Received task: face_detection[717056a5-2ea6-4555-aa9c-95654889b773]
+[2016-11-03 11:55:53,951: WARNING/Worker-1] ['srk', 'aishwrya']
+[2016-11-03 11:55:53,951: WARNING/Worker-1] [0.69591225815997793, 0.62711358470162237]
+[2016-11-03 11:55:53,951: WARNING/Worker-1] /root/face/recognize/utils/demos/../../../videos/5DkO7ksXY8E.mp4
+[tls @ 0x26a08c0] A TLS packet with unexpected length was received.
+[2016-11-03 11:55:55,036: WARNING/Worker-1] /root/face/recognize/utils/demos/../../../videos/5DkO7ksXY8E.mp4
+[2016-11-03 11:55:56,157: INFO/Worker-1] face_detection[717056a5-2ea6-4555-aa9c-95654889b773]: process start
+[2016-11-03 11:55:56,158: INFO/MainProcess] Task face_detection[717056a5-2ea6-4555-aa9c-95654889b773] succeeded in 2.408041502s: None
+
+worker: Hitting Ctrl+C again will terminate all running tasks!
+
+worker: Warm shutdown (MainProcess)
+ 
+ -------------- celery@dokku-2gb-blr1-01 v3.1.24 (Cipater)
+---- **** ----- 
+--- * ***  * -- Linux-3.13.0-85-generic-x86_64-with-Ubuntu-14.04-trusty
+-- * - **** --- 
+- ** ---------- [config]
+- ** ---------- .> app:         face:0x7f2196492450
+- ** ---------- .> transport:   redis://localhost:6379//
+- ** ---------- .> results:     redis://localhost:6379/
+- *** --- * --- .> concurrency: 2 (prefork)
+-- ******* ---- 
+--- ***** ----- [queues]
+ -------------- .> celery           exchange=celery(direct) key=celery
+                
+
+[tasks]
+  . face.celery.debug_task
+  . face_detection
+
