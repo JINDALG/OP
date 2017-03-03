@@ -46,9 +46,9 @@ Install dlib:
 	pip install dlib
 
 Install opencv:
-	wget https://raw.githubusercontent.com/milq/scripts-ubuntu-debian/master/install-opencv.sh
+	wget https://raw.githubusercontent.com/milq/milq/master/scripts/bash/install-opencv.sh
 	bash install-opencv.sh
-	export PYTHONPATH =/usr/local/lib/python2.7/site-packages/
+	export PYTHONPATH=/usr/local/lib/python2.7/site-packages/
 
 Install torch:
 	git clone https://github.com/torch/distro.git ~/torch --recursive
